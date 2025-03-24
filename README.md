@@ -9,12 +9,10 @@ Aplikasi REST API sederhana menggunakan Flask dan MySQL dengan implementasi kons
 │   ├── __init__.py          # Inisialisasi aplikasi Flask
 │   ├── config/
 │   │   └── database.py      # Konfigurasi database
-│   ├── controllers/
-│   │   └── user_controller.py  # Controller untuk endpoint users
+│   ├── controllers/         # Controller untuk endpoint
 │   ├── database/
 │   │   └── seeder.py        # Script untuk generate data dummy
-│   └── models/
-│       └── user.py          # Model untuk tabel users
+│   └── models/              # Model untuk tabel
 ├── app.py                   # Entry point aplikasi
 ├── .env                     # Environment variables
 └── requirements.txt         # Dependensi proyek
@@ -28,10 +26,10 @@ Aplikasi REST API sederhana menggunakan Flask dan MySQL dengan implementasi kons
 
 ## Instalasi
 
-1. Clone repositori ini
+1. Clone repositori
 ```bash
-git clone [url-repositori]
-cd [nama-folder]
+git clone https://github.com/Baghaztra/e-bio-x-backend.git
+cd e-bio-x-backend
 ```
 
 2. Buat dan aktifkan virtual environment
@@ -53,13 +51,20 @@ pip install -r requirements.txt
 MYSQL_USER=root
 MYSQL_PASSWORD=your_password
 MYSQL_HOST=localhost
-MYSQL_DATABASE=flask_db
+MYSQL_DATABASE=e_bio
 SECRET_KEY=your-secret-key-here
 ```
 
 5. Buat database MySQL
 ```sql
-CREATE DATABASE flask_db;
+CREATE DATABASE e_bio;
+```
+
+6. Migrasi databse
+```bash
+flask db init
+flask db migrate -m "Initial migration."
+flask db upgrade
 ```
 
 ## Menjalankan Aplikasi
@@ -142,13 +147,6 @@ Response format:
 - **python-dotenv**: Environment variables
 - **Faker**: Generate data dummy
 
-## Konsep MVC
-
-Proyek ini mengimplementasikan pola arsitektur MVC:
-- **Model**: `app/models/` - Mendefinisikan struktur data
-- **View**: Tidak ada karena ini adalah REST API
-- **Controller**: `app/controllers/` - Menangani logika bisnis
-
 ## Development
 
 ### Database Migrations
@@ -161,17 +159,3 @@ python -m app.database.seeder
 ```
 Ini akan membuat 10 user dummy menggunakan Faker.
 
-## Catatan Keamanan
-
-1. Jangan lupa untuk mengubah `SECRET_KEY` di file `.env`
-2. Jangan meng-commit file `.env` ke repositori
-3. Gunakan password yang kuat untuk database
-4. Aplikasi ini masih dalam mode development (`debug=True`), ubah ke `False` untuk production
-
-## Kontribusi
-
-1. Fork repositori
-2. Buat branch fitur baru
-3. Commit perubahan
-4. Push ke branch
-5. Buat Pull Request

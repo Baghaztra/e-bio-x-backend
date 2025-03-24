@@ -3,7 +3,7 @@ from app.models.user import User
 from app.config.database import db
 from app import app
 
-fake = Faker('id_ID')  # Menggunakan locale Indonesia
+fake = Faker('id_ID')
 
 def seed_users(num_users=10):
     """Seed users table with dummy data"""
