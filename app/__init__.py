@@ -1,29 +1,29 @@
-# This file makes the app directory a Python package 
-
 from flask import Flask
 from flask_migrate import Migrate
 from app.config.database import init_db, db
+from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+import os
 
 def create_app():
     app = Flask(__name__)
-    
-    # Initialize database
     init_db(app)
-    
-    # Setup migrations
     migrate = Migrate(app, db)
+    CORS(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
+    jwt = JWTManager(app)
     
     # Import routes
-    # from app.controllers.user_controller import get_all_users, create_user, google_login, callback, logout
-    from app.controllers.user_controller import get_all_users, create_user
+    from app.controllers.user_controller import get_all_users, create_user, protected, google_login
     
     # Register routes
-    # app.add_url_rule('/api/google_login', view_func=google_login, methods=['POST'])
-    # app.add_url_rule('/api/callback', view_func=callback, methods=['POST'])
-    # app.add_url_rule('/api/logout', view_func=logout, methods=['POST'])
+    app.add_url_rule('/api/google-login', view_func=google_login, methods=['POST'])
     
     app.add_url_rule('/api/users', view_func=get_all_users, methods=['GET'])
     app.add_url_rule('/api/users', view_func=create_user, methods=['POST'])
+    
+    # Protected route
+    app.add_url_rule('/api/protected', view_func=protected, methods=['GET'])
+
     
     return app
 
