@@ -6,9 +6,6 @@ from app.config.database import db
 from app.models.user import User
 import os
 
-# Load CLIENT_ID dari .env
-CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-
 def google_login():
     data = request.json
     token = data.get("token")
@@ -16,8 +13,13 @@ def google_login():
     if not token:
         return jsonify({"error": "Token is required"}), 400
 
-    print("token:", token)
-    user_data = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID, clock_skew_in_seconds=10)
+    user_data = id_token.verify_oauth2_token(
+        token, 
+        requests.Request(), 
+        os.getenv("GOOGLE_CLIENT_ID"), 
+        clock_skew_in_seconds=10
+    )
+    
     if not user_data:
         return jsonify({"error": "Invalid token"}), 400
 
@@ -34,11 +36,18 @@ def google_login():
             profile_pic=picture)
         db.session.add(user)
         db.session.commit()
+        user.role = "student"
 
     # Buat JWT token untuk user
     access_token = create_access_token(identity=email)
     
-    return jsonify({"access_token": access_token, "email": email, "name": name, "picture": picture})
+    return jsonify({
+        "access_token": access_token, 
+        "username": user.username, 
+        "email": user.email, 
+        "role": user.role, 
+        "profile_pic": user.profile_pic
+    })
 
 # Debug endpoint dengan jwt
 @jwt_required()
@@ -51,7 +60,9 @@ def get_all_users():
     return jsonify([{
         'id': user.id,
         'username': user.username,
-        'email': user.email
+        'role': user.role,
+        'email': user.email,
+        'profile_picture': user.profile_pic,
     } for user in users])
 
 def create_user():
