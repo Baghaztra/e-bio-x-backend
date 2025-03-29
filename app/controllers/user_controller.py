@@ -49,6 +49,28 @@ def google_login():
         "profile_pic": user.profile_pic
     })
 
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'message': 'Email and password are required'}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.check_password(password):
+        return jsonify({'message': 'Invalid email or password'}), 401
+
+    access_token = create_access_token(identity=user.email)
+
+    return jsonify({
+        'access_token': access_token,
+        'username': user.username,
+        'email': user.email,
+        'role': user.role,
+        'profile_pic': user.profile_pic
+    }), 200
+
 # Debug endpoint dengan jwt
 @jwt_required()
 def protected():
@@ -103,24 +125,21 @@ def delete_user(user_id):
     
     return jsonify({"message": "User deleted successfully"}), 200
 
-def login():
+def update_user(user_id):
     data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"message": "User not found"}), 404
 
-    if not email or not password:
-        return jsonify({'message': 'Email and password are required'}), 400
+    if "username" in data:
+        user.username = data["username"]
+    if "password" in data:
+        user.set_password(data["password"])
+    if "profile_pic" in data:
+        user.profile_pic = data["profile_pic"]
+    if "role" in data:
+        user.role = data["role"]
 
-    user = User.query.filter_by(email=email).first()
-    if not user or not user.check_password(password):
-        return jsonify({'message': 'Invalid email or password'}), 401
+    db.session.commit()
 
-    access_token = create_access_token(identity=user.email)
-
-    return jsonify({
-        'access_token': access_token,
-        'username': user.username,
-        'email': user.email,
-        'role': user.role,
-        'profile_pic': user.profile_pic
-    }), 200
+    return jsonify({"message": "User updated successfully"}), 200
