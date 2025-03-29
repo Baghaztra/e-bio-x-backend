@@ -13,13 +13,15 @@ def create_app():
     jwt = JWTManager(app)
     
     # Import routes
-    from app.controllers.user_controller import get_all_users, create_user, protected, google_login
+    from app.controllers.user_controller import get_all_users, create_user, delete_user, protected, google_login, login
     
     # Register routes
     app.add_url_rule('/api/google-login', view_func=google_login, methods=['POST'])
+    app.add_url_rule('/api/login', view_func=login, methods=['POST'])
     
     app.add_url_rule('/api/users', view_func=get_all_users, methods=['GET'])
     app.add_url_rule('/api/users', view_func=create_user, methods=['POST'])
+    app.add_url_rule('/api/users/<user_id>', view_func=delete_user, methods=['DELETE'])
     
     # Protected route
     app.add_url_rule('/api/protected', view_func=protected, methods=['GET'])

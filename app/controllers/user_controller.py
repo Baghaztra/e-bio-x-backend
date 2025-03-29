@@ -70,8 +70,11 @@ def create_user():
     
     new_user = User(
         username=data['username'],
-        email=data['email']
+        email=data['email'],
+        role=data['role']
     )
+    
+    new_user.set_password(data['password'])
     
     try:
         db.session.add(new_user)
@@ -81,9 +84,43 @@ def create_user():
             'user': {
                 'id': new_user.id,
                 'username': new_user.username,
-                'email': new_user.email
+                'email': new_user.email,
+                'role': new_user.role
             }
         }), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400 
+        return jsonify({'error': str(e)}), 400
+
+def delete_user(user_id):
+    user = User.query.filter_by(id=user_id).first()
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+    
+    return jsonify({"message": "User deleted successfully"}), 200
+
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'message': 'Email and password are required'}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.check_password(password):
+        return jsonify({'message': 'Invalid email or password'}), 401
+
+    access_token = create_access_token(identity=user.email)
+
+    return jsonify({
+        'access_token': access_token,
+        'username': user.username,
+        'email': user.email,
+        'role': user.role,
+        'profile_pic': user.profile_pic
+    }), 200
