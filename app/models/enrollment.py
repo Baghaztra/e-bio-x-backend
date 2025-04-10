@@ -1,14 +1,10 @@
-import random
 from app.config.database import db
 from datetime import datetime
-
-def generate_enrollment_id():
-    return str(random.randint(1000, 9999))
 
 class Enrollment(db.Model):
     __tablename__ = 'enrollments'
     
-    id = db.Column(db.String(4), primary_key=True, default=generate_enrollment_id)
+    id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     enrolled_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

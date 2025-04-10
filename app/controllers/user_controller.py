@@ -38,8 +38,7 @@ def google_login():
         db.session.commit()
         user.role = "student"
 
-    # Buat JWT token untuk user
-    access_token = create_access_token(identity=email)
+    access_token = create_access_token(identity=str(user.id))
     
     return jsonify({
         "access_token": access_token, 
@@ -61,7 +60,7 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({'message': 'Invalid email or password'}), 401
 
-    access_token = create_access_token(identity=user.email)
+    access_token = create_access_token(identity=str(user.id))
 
     return jsonify({
         'access_token': access_token,
