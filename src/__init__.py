@@ -3,10 +3,15 @@ from flask_migrate import Migrate
 from src.config.database import init_db, db
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from datetime import timedelta
 import os
 
 def create_app():
     app = Flask(__name__)
+    app.config['JWT_SECRET_KEY'] = os.getenv("SECRET_KEY")
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=3)
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=7)
+    # TODO: REFRESH TOKEN API AND FRONTEND IMPLEMENTATION
     init_db(app)
     migrate = Migrate(app, db)
     CORS(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
