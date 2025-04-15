@@ -1,6 +1,7 @@
 # Flask REST API dengan MySQL
-
-Aplikasi REST API sederhana menggunakan Flask dan MySQL dengan implementasi konsep MVC (Model-View-Controller).
+Aplikasi REST API sederhana menggunakan Flask dan MySQL dengan implementasi konsep MVC (Model-View-Controller) untuk backend aplikasi e-learning E-Bio X.
+#### By *Baghaztra Van Ril*
+---
 
 ## Struktur Proyek
 ```
@@ -8,13 +9,10 @@ Aplikasi REST API sederhana menggunakan Flask dan MySQL dengan implementasi kons
 ├── app/
 │   ├── __init__.py          # Inisialisasi aplikasi Flask
 │   ├── config/
-│   │   └── database.py      # Konfigurasi database
-│   ├── controllers/         # Controller untuk endpoint
+│   ├── controllers/
 │   ├── database/
-│   │   └── seeder.py        # Script untuk generate data dummy
-│   └── models/              # Model untuk tabel
+│   └── models/
 ├── app.py                   # Entry point aplikasi
-├── .env                     # Environment variables
 └── requirements.txt         # Dependensi proyek
 ```
 
@@ -22,7 +20,6 @@ Aplikasi REST API sederhana menggunakan Flask dan MySQL dengan implementasi kons
 
 - Python 3.8+
 - MySQL Server
-- Virtual Environment (venv)
 
 ## Instalasi
 
@@ -35,8 +32,14 @@ cd e-bio-x-backend
 2. Buat dan aktifkan virtual environment
 ```bash
 python -m venv .venv
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Linux/Mac
+```
+> windows
+```bash
+.venv\Scripts\activate 
+```
+> linux/mac
+```bash
+source .venv/bin/activate
 ```
 
 3. Install dependensi
@@ -44,15 +47,16 @@ source .venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-4. Konfigurasi database
-   - Buat file `.env` (jika belum ada)
-   - Isi dengan konfigurasi berikut:
-```env
-MYSQL_USER=root
-MYSQL_PASSWORD=your_password
-MYSQL_HOST=localhost
-MYSQL_DATABASE=e_bio
-SECRET_KEY=your-secret-key-here
+4. Konfigurasi Environment
+
+Salin file `.env.example` menjadi `.env`, kemudian sesuaikan isinya.
+> windows
+```bash
+cp .env.example .env
+```
+> linux/mac
+```bash
+copy .env.example .env
 ```
 
 5. Buat database MySQL
@@ -61,11 +65,21 @@ CREATE DATABASE e_bio;
 ```
 
 6. Migrasi databse
+Pastikan sudah ada database dengan nama sesuai dengan yanga ada pada `.env`
 ```bash
 flask db init
 flask db migrate -m "Initial migration."
 flask db upgrade
 ```
+7. Seeder database (Optional)
+```bash
+python -m src.database.seeder
+```
+8. Reset databse (Jika dibutuhkan)
+```bash
+python -m src.database.reset
+```
+
 
 ## Menjalankan Aplikasi
 
@@ -75,17 +89,12 @@ python app.py
 ```
 Aplikasi akan berjalan di `http://localhost:5000`
 
-2. Generate data dummy (opsional)
-```bash
-python -m app.database.seeder
-```
-
-## API Endpoints
+## Contoh API Endpoints
 
 ### 1. Root Endpoint
 - URL: `/`
 - Method: `GET`
-- Response: "Hello, World!"
+- Response: "Server is running!"
 ```bash
 curl http://localhost:5000/
 ```
@@ -117,13 +126,14 @@ Response format:
 ```json
 {
   "username": "new_user",
-  "email": "new_user@example.com"
+  "email": "new_user@example.com",
+  "password": "password"
 }
 ```
 ```bash
 curl -X POST \
      -H "Content-Type: application/json" \
-     -d '{"username":"new_user","email":"new_user@example.com"}' \
+     -d '{"username":"new_user","email":"new_user@example.com"}',"password":"password"}' \
      http://localhost:5000/api/users
 ```
 Response format:
@@ -151,11 +161,3 @@ Response format:
 
 ### Database Migrations
 Migrasi database ditangani oleh Flask-Migrate dan SQLAlchemy. Tabel akan dibuat otomatis saat aplikasi pertama kali dijalankan.
-
-### Data Seeding
-Untuk mengisi database dengan data dummy, gunakan seeder:
-```bash
-python -m app.database.seeder
-```
-Ini akan membuat 10 user dummy menggunakan Faker.
-

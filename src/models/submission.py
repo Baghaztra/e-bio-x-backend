@@ -1,4 +1,4 @@
-from app.config.database import db
+from src.config.database import db
 from datetime import datetime
 
 class Submission(db.Model):

@@ -1,5 +1,5 @@
-from app import app
-from app.config.database import db
+from src import app
+from src.config.database import db
 from flask_migrate import upgrade, downgrade
 
 def reset_database():

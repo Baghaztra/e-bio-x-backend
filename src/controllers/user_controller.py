@@ -2,8 +2,8 @@ from flask import jsonify, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from google.auth.transport import requests
 from google.oauth2 import id_token
-from app.config.database import db
-from app.models.user import User
+from src.config.database import db
+from src.models.user import User
 import os
 
 def google_login():
@@ -27,11 +27,10 @@ def google_login():
     name = user_data.get("name")
     picture = user_data.get("picture")
 
-    # Cek apakah user sudah ada di database
     user = User.query.filter_by(email=email).first()
     if not user:
         user = User(
-            username=name,
+            name=name,
             email=email, 
             profile_pic=picture)
         db.session.add(user)
@@ -42,7 +41,7 @@ def google_login():
     
     return jsonify({
         "access_token": access_token, 
-        "username": user.username, 
+        "name": user.name, 
         "email": user.email, 
         "role": user.role, 
         "profile_pic": user.profile_pic
@@ -64,23 +63,17 @@ def login():
 
     return jsonify({
         'access_token': access_token,
-        'username': user.username,
+        'name': user.name,
         'email': user.email,
         'role': user.role,
         'profile_pic': user.profile_pic
     }), 200
 
-# Debug endpoint dengan jwt
-@jwt_required()
-def protected():
-    current_user = get_jwt_identity()
-    return jsonify({"message": "You are logged in", "user": current_user})
-
 def get_all_users():
     users = User.query.all()
     return jsonify([{
         'id': user.id,
-        'username': user.username,
+        'name': user.name,
         'role': user.role,
         'email': user.email,
         'profile_picture': user.profile_pic,
@@ -90,7 +83,7 @@ def create_user():
     data = request.get_json()
     
     new_user = User(
-        username=data['username'],
+        name=data['name'],
         email=data['email'],
         role=data['role']
     )
@@ -104,7 +97,7 @@ def create_user():
             'message': 'User created successfully',
             'user': {
                 'id': new_user.id,
-                'username': new_user.username,
+                'name': new_user.name,
                 'email': new_user.email,
                 'role': new_user.role
             }
@@ -130,8 +123,8 @@ def update_user(user_id):
     if not user:
         return jsonify({"message": "User not found"}), 404
 
-    if "username" in data:
-        user.username = data["username"]
+    if "name" in data:
+        user.name = data["name"]
     if "password" in data:
         user.set_password(data["password"])
     if "profile_pic" in data:
@@ -142,3 +135,9 @@ def update_user(user_id):
     db.session.commit()
 
     return jsonify({"message": "User updated successfully"}), 200
+
+# Debug endpoint dengan jwt
+@jwt_required()
+def protected():
+    current_user = get_jwt_identity()
+    return jsonify({"message": "You are logged in", "user": current_user})

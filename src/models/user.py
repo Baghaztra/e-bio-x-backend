@@ -1,4 +1,4 @@
-from app.config.database import db
+from src.config.database import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -6,7 +6,7 @@ class User(db.Model):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     profile_pic = db.Column(db.String(255), nullable=True)
     role = db.Column(db.Enum('admin', 'teacher', 'student'), nullable=False, default='student')
@@ -20,4 +20,4 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
     
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'<User {self.name}>'

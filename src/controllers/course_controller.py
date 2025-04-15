@@ -1,8 +1,8 @@
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.models.course import Course
-from app.models.enrollment import Enrollment
-from app.config.database import db
+from src.models.course import Course
+from src.models.enrollment import Enrollment
+from src.config.database import db
 
 @jwt_required()
 def create_course():
@@ -48,7 +48,7 @@ def get_courses():
     return jsonify(result), 200
 
 @jwt_required()
-def get_my_courses():
+def get_teacher_courses():
     teacher_id = get_jwt_identity()
     courses = Course.query.filter_by(teacher_id=teacher_id).all()
 
@@ -57,6 +57,26 @@ def get_my_courses():
         result.append({
             "id": course.id,
             "name": course.name,
+            "created_at": course.created_at.isoformat(),
+            "code": f"KLS{course.id:03d}",
+            "students": len(course.enrollments)
+        })
+
+    return jsonify(result), 200
+
+@jwt_required()
+def get_student_courses():
+    student_id = get_jwt_identity()
+
+    enrollments = Enrollment.query.filter_by(student_id=student_id).all()
+
+    result = []
+    for enrollment in enrollments:
+        course = enrollment.course
+        result.append({
+            "id": course.id,
+            "name": course.name,
+            "teacher": course.teacher.name,
             "created_at": course.created_at.isoformat(),
             "code": f"KLS{course.id:03d}",
             "students": len(course.enrollments)
@@ -87,5 +107,27 @@ def enroll(course_id):
 
     return jsonify({
         "message": f"Enroll successfully to {course.name}",
+    }), 200
+
+def get_course_by_id(course_id):
+    course = Course.query.get(course_id)
+    if not course:
+        jsonify({"error": "Course not found"}), 404
+
+    students = []
+    for enrollment in course.enrollments:
+        students.append({
+            "id": enrollment.student.id,
+            "name": enrollment.student.name,
+            "email": enrollment.student.email
+        })
+        
+    return jsonify({
+        "name": course.name,
+        "created_at": course.created_at.isoformat(),
+        "code": f"KLS{course.id:03d}",
+        "teacher": course.teacher.name,
+        "students_count": len(course.enrollments),
+        "students": students
     }), 200
 

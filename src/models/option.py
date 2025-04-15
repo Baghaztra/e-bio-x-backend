@@ -1,4 +1,4 @@
-from app.config.database import db
+from src.config.database import db
 
 class Option(db.Model):
     __tablename__ = 'options'

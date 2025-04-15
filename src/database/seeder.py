@@ -1,7 +1,7 @@
 from faker import Faker
-from app.models.user import User
-from app.config.database import db
-from app import app
+from src.models.user import User
+from src.config.database import db
+from src import app
 
 fake = Faker('id_ID')
 
@@ -11,7 +11,7 @@ def seed_users(num_users=10):
         with app.app_context():
             for _ in range(num_users):
                 user = User(
-                    username=fake.user_name(),
+                    name=fake.user_name(),
                     email=fake.email()
                 )
                 db.session.add(user)
