@@ -59,6 +59,9 @@ cp .env.example .env
 copy .env.example .env
 ```
 
+Simpan data *credentials* dari *google developer console* ke `./src/config/credentials.json` 
+
+
 5. Buat database MySQL
 ```sql
 CREATE DATABASE e_bio;
