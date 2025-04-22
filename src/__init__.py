@@ -20,6 +20,7 @@ def create_app():
     # Import routes
     from src.controllers.user_controller import google_login, login, get_all_users, create_user, update_user, delete_user, protected
     from src.controllers.course_controller import create_course, get_courses, get_teacher_courses, get_student_courses, delete_course, enroll, out, get_course_by_id
+    from src.controllers.material_controller import upload_material
     
     # Register routes
     app.add_url_rule('/api/google-login', view_func=google_login, methods=['POST'])
@@ -38,6 +39,8 @@ def create_app():
     app.add_url_rule('/api/courses/student', view_func=get_student_courses, methods=['GET'])
     app.add_url_rule('/api/courses/enroll/<course_id>', view_func=enroll, methods=['GET'])
     app.add_url_rule('/api/courses/out/<course_id>', view_func=out, methods=['GET'])
+    
+    app.add_url_rule('/api/materials', view_func=upload_material, methods=['POST'])
     
     # Protected route
     app.add_url_rule('/api/protected', view_func=protected, methods=['GET'])

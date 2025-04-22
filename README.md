@@ -6,7 +6,7 @@ Aplikasi REST API sederhana menggunakan Flask dan MySQL dengan implementasi kons
 ## Struktur Proyek
 ```
 .
-├── app/
+├── src/
 │   ├── __init__.py          # Inisialisasi aplikasi Flask
 │   ├── config/
 │   ├── controllers/

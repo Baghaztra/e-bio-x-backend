@@ -73,3 +73,7 @@ migrations/
 .env.development
 .env.test
 .env.production 
+
+# File upload
+src/config/credentials.json
+temp/
