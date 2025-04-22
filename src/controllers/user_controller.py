@@ -56,6 +56,8 @@ def login():
         return jsonify({'message': 'Email and password are required'}), 400
 
     user = User.query.filter_by(email=email).first()
+    if user and user.password_hash == None:
+        return jsonify({'message': 'Please login with Google'}), 418
     if not user or not user.check_password(password):
         return jsonify({'message': 'Invalid email or password'}), 401
 

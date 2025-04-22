@@ -114,6 +114,32 @@ def enroll(course_id):
         "message": f"Enroll successfully to {course.name}",
     }), 200
 
+@jwt_required()
+def out(course_id):
+    if course_id.startswith("KLS") and course_id[3:].isdigit():
+        course_id = int(course_id[3:])
+    else:
+        return jsonify({"error": "Invalid course code format"}), 400
+    course = Course.query.get(course_id)
+    
+    if not course:
+        return jsonify({"error": "Course not found"}), 404
+    
+    student_id = get_jwt_identity()
+    if not student_id:
+        return jsonify({"error": "Student not authenticated"}), 401
+    
+    enroll = Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first()
+    if not enroll:
+        return jsonify({"error": f"You are not enrolled in {course.name}"}), 400
+    
+    db.session.delete(enroll)
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Successfully out from {course.name}",
+    }), 200
+
 def get_course_by_id(course_id):
     course = Course.query.get(course_id)
     if not course:
@@ -134,5 +160,28 @@ def get_course_by_id(course_id):
         "teacher": course.teacher.name,
         "students_count": len(course.enrollments),
         "students": students
+    }), 200
+
+@jwt_required()
+def delete_course(course_id):
+    course = Course.query.get(course_id)
+    if not course:
+        jsonify({"error": "Course not found"}), 404
+
+    try:
+        for enrollment in course.enrollments:
+            db.session.delete(enrollment)
+        
+        db.session.delete(course)
+    except:
+        db.session.rollback()
+        return jsonify({
+            "message":f"Failed to delete {course.name}" 
+        }), 
+        
+    db.session.commit()
+        
+    return jsonify({
+        "message":"Course deleted successfully" 
     }), 200
 
