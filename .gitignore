@@ -76,4 +76,3 @@ migrations/
 
 # File upload
 src/config/credentials.json
-temp/
