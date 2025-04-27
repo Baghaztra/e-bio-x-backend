@@ -7,9 +7,6 @@ def reset_database():
         db.drop_all()
         print("All tables dropped.")
         
-        db.create_all()
-        print("All tables created.")
-        
         upgrade()
         print("Database migrated.")
 

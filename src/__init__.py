@@ -21,6 +21,7 @@ def create_app():
     from src.controllers.user_controller import google_login, login, get_all_users, create_user, update_user, delete_user, protected
     from src.controllers.course_controller import create_course, get_courses, get_teacher_courses, get_student_courses, delete_course, enroll, out, get_course_by_id
     from src.controllers.material_controller import upload_material, get_material_by_id, get_material_by_course, delete_material
+    from src.controllers.quiz_controller import create_quiz, get_quiz_by_id, delete_quiz, get_quizzes_by_course
     
     # Register routes
     app.add_url_rule('/api/google-login', view_func=google_login, methods=['POST'])
@@ -40,10 +41,15 @@ def create_app():
     app.add_url_rule('/api/courses/enroll/<course_id>', view_func=enroll, methods=['GET'])
     app.add_url_rule('/api/courses/out/<course_id>', view_func=out, methods=['GET'])
     app.add_url_rule('/api/courses/materials/<course_id>', view_func=get_material_by_course, methods=['GET'])
+    app.add_url_rule('/api/course/quiz/<course_id>', view_func=get_quizzes_by_course, methods=['GET'])
     
     app.add_url_rule('/api/materials', view_func=upload_material, methods=['POST'])
     app.add_url_rule('/api/materials/<material_id>', view_func=get_material_by_id, methods=['GET'])
     app.add_url_rule('/api/materials/<material_id>', view_func=delete_material, methods=['DELETE'])
+    
+    app.add_url_rule('/api/quiz', view_func=create_quiz, methods=['POST'])
+    app.add_url_rule('/api/quiz/<quiz_id>', view_func=get_quiz_by_id, methods=['GET'])
+    app.add_url_rule('/api/quiz/<quiz_id>', view_func=delete_quiz, methods=['DELETE'])
     
     # Protected route
     app.add_url_rule('/api/protected', view_func=protected, methods=['GET'])

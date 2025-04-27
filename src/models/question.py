@@ -7,7 +7,7 @@ class Question(db.Model):
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
     text = db.Column(db.Text, nullable=False)
 
-    quiz = db.relationship('Quiz', backref=db.backref('questions', lazy=True))
+    quiz = db.relationship('Quiz', backref=db.backref('questions', lazy=True, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<Question {self.id}>'

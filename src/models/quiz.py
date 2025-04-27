@@ -10,7 +10,7 @@ class Quiz(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     is_closed = db.Column(db.Boolean, default=False)
 
-    course = db.relationship('Course', backref=db.backref('quizzes', lazy=True))
+    course = db.relationship('Course', backref=db.backref('quizzes', lazy=True, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<Quiz {self.title}>'

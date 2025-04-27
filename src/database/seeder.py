@@ -42,10 +42,10 @@ def seed_users(num_users=10, teacher=None):
 
 if __name__ == '__main__':
     with app.app_context():
-        # db.session.query(Enrollment).delete()
-        # db.session.query(Course).delete()
-        # db.session.query(User).delete()
-        # db.session.commit()
+        db.session.query(Enrollment).delete()
+        db.session.query(Course).delete()
+        db.session.query(User).delete()
+        db.session.commit()
         
         # Create admin
         print(f"Create new admin...")
@@ -78,5 +78,7 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"Error creating teacher")
             db.session.rollback()
+            
+        teacher = User.query.filter_by(name='Guru 1').first()
         
         seed_users(teacher=teacher)

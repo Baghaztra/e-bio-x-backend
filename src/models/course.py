@@ -9,7 +9,7 @@ class Course(db.Model):
     teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    teacher = db.relationship('User', backref=db.backref('courses', lazy=True))
+    teacher = db.relationship('User', backref=db.backref('courses', lazy=True, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<Course {self.name}>'
