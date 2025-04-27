@@ -9,8 +9,8 @@ class Enrollment(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     enrolled_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    student = db.relationship('User', backref=db.backref('enrollments', lazy=True))
-    course = db.relationship('Course', backref=db.backref('enrollments', lazy=True))
+    student = db.relationship('User', backref=db.backref('enrollments', lazy=True, cascade="all, delete-orphan"))
+    course = db.relationship('Course', backref=db.backref('enrollments', lazy=True, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<Enrollment {self.id}>'

@@ -11,7 +11,7 @@ class Material(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     uploaded_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    course = db.relationship('Course', backref=db.backref('materials', lazy=True))
+    course = db.relationship('Course', backref=db.backref('materials', lazy=True, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f'<Material {self.title}>'

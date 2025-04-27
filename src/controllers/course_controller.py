@@ -140,6 +140,7 @@ def out(course_id):
         "message": f"Successfully out from {course.name}",
     }), 200
 
+@jwt_required()
 def get_course_by_id(course_id):
     course = Course.query.get(course_id)
     if not course:
