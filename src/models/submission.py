@@ -9,6 +9,7 @@ class Submission(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     work_time = db.Column(db.Time, nullable=False)
     score = db.Column(db.Float, nullable=True)
+    cluster = db.Column(db.Integer, nullable=True)
     submitted_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     quiz = db.relationship('Quiz', backref=db.backref('results', lazy=True, cascade="all, delete-orphan"))
