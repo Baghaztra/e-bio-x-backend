@@ -44,6 +44,7 @@ def google_login():
         "name": user.name, 
         "email": user.email, 
         "role": user.role, 
+        "has_password":  bool(user.password_hash),
         "profile_pic": user.profile_pic
     })
 
@@ -68,9 +69,11 @@ def login():
         'name': user.name,
         'email': user.email,
         'role': user.role,
+        "has_password": bool(user.password_hash),
         'profile_pic': user.profile_pic
     }), 200
 
+@jwt_required()
 def get_all_users():
     users = User.query.all()
     return jsonify([{
@@ -81,6 +84,7 @@ def get_all_users():
         'profile_picture': user.profile_pic,
     } for user in users])
 
+@jwt_required()
 def create_user():
     data = request.get_json()
     
@@ -108,6 +112,7 @@ def create_user():
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
+@jwt_required()
 def delete_user(user_id):
     user = User.query.filter_by(id=user_id).first()
 
@@ -119,6 +124,7 @@ def delete_user(user_id):
     
     return jsonify({"message": "User deleted successfully"}), 200
 
+@jwt_required()
 def update_user(user_id):
     data = request.get_json()
     user = User.query.filter_by(id=user_id).first()
@@ -138,7 +144,41 @@ def update_user(user_id):
 
     return jsonify({"message": "User updated successfully"}), 200
 
-# Debug endpoint dengan jwt
+@jwt_required()
+def update_user_me():
+    current_user = get_jwt_identity()
+    user = User.query.get(current_user)
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    try:
+        if request.content_type.startswith('multipart/form-data'):
+            # update profile picture
+            if 'profile_pic' in request.files:
+                file = request.files['profile_pic']
+                filename = f"profile_{user.id}.png"
+                file.save(f"./uploads/{filename}") 
+                user.profile_pic = f"/uploads/{filename}"
+
+        else:
+            data = request.get_json()
+
+            if "name" in data:
+                user.name = data["name"]
+            if "current_password" in data and "new_password" in data:
+                if not user.check_password(data["current_password"]):
+                    return jsonify({"message": "Incorrect current password"}), 400
+                user.set_password(data["new_password"])
+
+        db.session.commit()
+        return jsonify({"message": "User updated successfully"}), 200
+
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        return jsonify({"message": "Failed to update user"}), 500
+
 @jwt_required()
 def protected():
     current_user = get_jwt_identity()

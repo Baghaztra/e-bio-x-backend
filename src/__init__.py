@@ -18,7 +18,7 @@ def create_app():
     jwt = JWTManager(app)
     
     # Import routes
-    from src.controllers.user_controller import google_login, login, get_all_users, create_user, update_user, delete_user, protected
+    from src.controllers.user_controller import google_login, login, get_all_users, create_user, update_user, update_user_me, delete_user, protected
     from src.controllers.course_controller import create_course, get_courses, get_teacher_courses, get_student_courses, delete_course, enroll, out, get_course_by_id
     from src.controllers.material_controller import upload_material, get_material_by_id, get_material_by_course, delete_material
     from src.controllers.quiz_controller import create_quiz, get_quiz_by_id, delete_quiz, get_quizzes_by_course, submit_quiz, remove_sumbission
@@ -31,6 +31,7 @@ def create_app():
     app.add_url_rule('/api/users', view_func=create_user, methods=['POST'])
     app.add_url_rule('/api/users/<user_id>', view_func=update_user, methods=['PUT'])
     app.add_url_rule('/api/users/<user_id>', view_func=delete_user, methods=['DELETE'])
+    app.add_url_rule('/api/user/me', view_func=update_user_me, methods=['PUT'])
     
     app.add_url_rule('/api/courses', view_func=create_course, methods=['POST'])
     app.add_url_rule('/api/courses', view_func=get_courses, methods=['GET'])
