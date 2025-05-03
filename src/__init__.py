@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_migrate import Migrate
 from src.config.database import init_db, db
 from flask_cors import CORS
@@ -8,20 +8,25 @@ import os
 
 def create_app():
     app = Flask(__name__)
+
+    # JWT
     app.config['JWT_SECRET_KEY'] = os.getenv("SECRET_KEY")
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=3)
     app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=7)
-    # TODO: REFRESH TOKEN API AND FRONTEND IMPLEMENTATION
+    JWTManager(app)
+    
+    # Database & Migration
     init_db(app)
-    migrate = Migrate(app, db)
+    Migrate(app, db)
+
+    # CORS
     CORS(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
-    jwt = JWTManager(app)
     
     # Import routes
     from src.controllers.user_controller import google_login, login, get_all_users, create_user, update_user, update_user_me, delete_user, protected
     from src.controllers.course_controller import create_course, get_courses, get_teacher_courses, get_student_courses, delete_course, enroll, out, get_course_by_id
     from src.controllers.material_controller import upload_material, get_material_by_id, get_material_by_course, delete_material
-    from src.controllers.quiz_controller import create_quiz, get_quiz_by_id, delete_quiz, get_quizzes_by_course, submit_quiz, remove_sumbission
+    from src.controllers.quiz_controller import create_quiz, get_quiz_by_id, delete_quiz, get_quizzes_by_course, submit_quiz, remove_sumbission, get_submission_by_quiz, toggle_open_quiz, edit_quiz_title, edit_question, edit_option
     
     # Register routes
     app.add_url_rule('/api/google-login', view_func=google_login, methods=['POST'])
@@ -50,9 +55,15 @@ def create_app():
     
     app.add_url_rule('/api/quiz', view_func=create_quiz, methods=['POST'])
     app.add_url_rule('/api/quiz/<quiz_id>', view_func=get_quiz_by_id, methods=['GET'])
+    app.add_url_rule('/api/quiz/<quiz_id>', view_func=toggle_open_quiz, methods=['PUT'])
     app.add_url_rule('/api/quiz/<quiz_id>', view_func=delete_quiz, methods=['DELETE'])
     app.add_url_rule('/api/quiz/<quiz_id>/submit', view_func=submit_quiz, methods=['POST'])
+    app.add_url_rule('/api/quiz/submission/<quiz_id>', view_func=get_submission_by_quiz, methods=['GET'])
     app.add_url_rule('/api/quiz/submission/<quiz_id>', view_func=remove_sumbission, methods=['DELETE'])
+    
+    app.add_url_rule('/api/quiz/<quiz_id>/edit_title', view_func=edit_quiz_title, methods=['PUT'])
+    app.add_url_rule('/api/quiz/<question_id>/edit_question', view_func=edit_question, methods=['PUT'])
+    app.add_url_rule('/api/quiz/<option_id>/edit_option', view_func=edit_option, methods=['PUT'])
     
     # Protected route
     app.add_url_rule('/api/protected', view_func=protected, methods=['GET'])
