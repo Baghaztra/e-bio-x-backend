@@ -44,4 +44,4 @@ def seed(quiz_id):
 
 if __name__ == "__main__":
     with app.app_context():
-        seed(3)
+        seed(6)

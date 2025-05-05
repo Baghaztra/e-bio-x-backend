@@ -7,7 +7,7 @@ from src import app
 
 fake = Faker('id_ID')
 
-def seed_users(num_users=10, teacher=None):
+def seed_users(num_users=30, teacher=None):
     print(f"Seeding {str(num_users)} users...")
     try:
         course_names = ['Biologi 1', 'Biologi 2']
@@ -20,7 +20,7 @@ def seed_users(num_users=10, teacher=None):
         db.session.commit()
         for _ in range(num_users):
             student = User(
-                name=fake.name(),
+                name=f"{fake.first_name()} {fake.last_name()}",
                 email=fake.unique.email(),
                 role='student'
             )
@@ -42,9 +42,9 @@ def seed_users(num_users=10, teacher=None):
 
 if __name__ == '__main__':
     with app.app_context():
-        db.session.query(Enrollment).delete()
-        db.session.query(Course).delete()
-        db.session.query(User).delete()
+        users = db.session.query(User).all()
+        for user in users:
+            db.session.delete(user)
         db.session.commit()
         
         # Create admin
@@ -81,4 +81,4 @@ if __name__ == '__main__':
             
         teacher = User.query.filter_by(name='Guru 1').first()
         
-        seed_users(teacher=teacher)
+        seed_users(teacher=teacher, num_users=60)
