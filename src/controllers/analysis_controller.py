@@ -2,19 +2,19 @@ from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.models.submission import Submission
 from src.models.quiz import Quiz
-from src.services.analysis_service import analyze_quiz_data, analyze_with_decision_tree
+from src.services.analysis_service import kmeans, decision_tree
 
-# @jwt_required()
+@jwt_required()
 def analyze_quiz(quiz_id):
     quiz = Quiz.query.get(quiz_id)
     if not quiz:
         return jsonify({'message': 'Quiz not found'}), 404
 
-    result = analyze_quiz_data(quiz_id)
+    result = kmeans(quiz_id)
     if isinstance(result, tuple): 
         return jsonify(result[0]), result[1]
 
-    rules = analyze_with_decision_tree(quiz_id)
+    rules = decision_tree(quiz_id)
     if isinstance(rules, dict):
         return jsonify(rules), 400
 
@@ -63,7 +63,7 @@ def analyze_quiz(quiz_id):
     })
 
 
-# @jwt_required()
+@jwt_required()
 def get_analyze(quiz_id):
     quiz = Quiz.query.get(quiz_id)
     if not quiz:
@@ -74,7 +74,7 @@ def get_analyze(quiz_id):
     if not submissions:
         return jsonify({'message': 'Data tidak ditemukan'}), 404
 
-    rules = analyze_with_decision_tree(quiz_id)
+    rules = decision_tree(quiz_id)
     if isinstance(rules, dict):
         return jsonify(rules), 400
 

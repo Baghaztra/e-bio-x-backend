@@ -4,7 +4,7 @@ from sklearn.tree import DecisionTreeClassifier, export_text
 from src.models import Submission
 from src.config.database import db
 
-def analyze_quiz_data(quiz_id):
+def kmeans(quiz_id):
     submissions = Submission.query.filter_by(quiz_id=quiz_id).all()
 
     if not submissions:
@@ -12,42 +12,50 @@ def analyze_quiz_data(quiz_id):
 
     # Ambil score dan work time jika data berisi
     data = []
-    valid_submissions = []
     for s in submissions:
         if s.score is not None:
             total_seconds = s.work_time.hour * 3600 + s.work_time.minute * 60 + s.work_time.second
-            weighted_score = s.score * 9
-            weighted_time = total_seconds * 1
-            data.append([weighted_score, weighted_time])
-            valid_submissions.append(s)
+            data.append([s.score, total_seconds])
+            # data.append([s.score])
 
     if len(data) < 3:
         return {'message': 'Data yang tersedia terlalu sedikit.'}, 400
     
     # Training model
+    # Scaling
     scaler = StandardScaler()
     data_scaled = scaler.fit_transform(data)
 
+    weighted_data = []
+    for d in data_scaled:
+        weighted_data.append([
+            d[0] * 0.7,
+            d[1] * 0.3  
+        ])
+
     # Clustering
     kmeans = KMeans(n_clusters=3, random_state=0)
-    clusters = kmeans.fit_predict(data_scaled)
+    clusters = kmeans.fit_predict(weighted_data)
+    # clusters = kmeans.fit_predict(data_scaled)
+
+    data_scaled = scaler.fit_transform(data)
 
     # Update cluster ke database dan hasil
     hasil = []
-    for s, c in zip(valid_submissions, clusters):
-        s.cluster = int(c)
-        hasil.append({
-            'id': s.id,
-            'nama': s.student.name,
-            'score': s.score,
-            'work_time': s.work_time.strftime('%H:%M:%S'),
-            'submitted_at': s.submitted_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'cluster': int(c)
-        })
-
-    # Sisanya tetap cluster None
+    idx = 0
     for s in submissions:
-        if s.score is None:
+        if s.score is not None:
+            s.cluster = int(clusters[idx])
+            hasil.append({
+                'id': s.id,
+                'nama': s.student.name,
+                'score': s.score,
+                'work_time': s.work_time.strftime('%H:%M:%S'),
+                'submitted_at': s.submitted_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'cluster': int(clusters[idx])
+            })
+            idx += 1
+        else:
             s.cluster = None
 
     db.session.commit()
@@ -55,7 +63,7 @@ def analyze_quiz_data(quiz_id):
     return hasil
 
 
-def analyze_with_decision_tree(quiz_id):
+def decision_tree(quiz_id):
     submissions = Submission.query.filter_by(quiz_id=quiz_id).all()
 
     if not submissions:
