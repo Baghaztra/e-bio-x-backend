@@ -1,10 +1,13 @@
 from flask import jsonify, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from googleapiclient.http import MediaIoBaseUpload
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from src.config.database import db
 from src.models.user import User
+from src.config.drive import drive_service
 import os
+import re
 
 def google_login():
     data = request.json
@@ -119,6 +122,19 @@ def delete_user(user_id):
     if not user:
         return jsonify({"message": "User not found"}), 404
 
+    if user.profile_pic:
+        file_id = None
+        if user.profile_pic:
+            match = re.search(r'/d/([a-zA-Z0-9_-]+)', user.profile_pic)
+            if match:
+                file_id = match.group(1)
+        
+        if file_id:
+            try:
+                drive_service.files().delete(fileId=file_id).execute()
+            except Exception as e:
+                print("Failed to delete from Google Drive:", e)
+        
     db.session.delete(user)
     db.session.commit()
     
@@ -135,8 +151,14 @@ def update_user(user_id):
         user.name = data["name"]
     if "password" in data:
         user.set_password(data["password"])
-    if "profile_pic" in data:
-        user.profile_pic = data["profile_pic"]
+    if 'profile_pic' in request.files:
+        file = request.files.get('profile_pic')
+        if not file:
+            return jsonify({'error': 'File required'}), 400
+        
+        web_view_link = upload_profile_pic_to_drive(user, file, drive_service)
+        if web_view_link:
+            user.profile_pic = web_view_link
     if "role" in data:
         user.role = data["role"]
 
@@ -154,28 +176,34 @@ def update_user_me():
 
     try:
         if request.content_type.startswith('multipart/form-data'):
-            # update profile picture
             if 'profile_pic' in request.files:
-                file = request.files['profile_pic']
-                filename = f"profile_{user.id}.png"
-                file.save(f"./uploads/{filename}") 
-                user.profile_pic = f"/uploads/{filename}"
+                file = request.files.get('profile_pic')
+                if not file:
+                    return jsonify({'error': 'File required'}), 400
+
+                web_view_link = upload_profile_pic_to_drive(user, file, drive_service)
+                if web_view_link:
+                    user.profile_pic = web_view_link
 
         else:
             data = request.get_json()
 
             if "name" in data:
                 user.name = data["name"]
-            if "current_password" in data and "new_password" in data:
+            elif "current_password" in data and "new_password" in data:
                 if not user.check_password(data["current_password"]):
                     return jsonify({"message": "Incorrect current password"}), 400
                 user.set_password(data["new_password"])
-
+            elif "new_password" in data:
+                user.set_password(data["new_password"])
+            else:
+                return jsonify({"message": "Nothing to update"}), 400
+            
         db.session.commit()
         return jsonify({"message": "User updated successfully"}), 200
 
     except Exception as e:
-        print(e)
+        print("Failed to update user", e)
         db.session.rollback()
         return jsonify({"message": "Failed to update user"}), 500
 
@@ -183,3 +211,64 @@ def update_user_me():
 def protected():
     current_user = get_jwt_identity()
     return jsonify({"message": "You are logged in", "user": current_user})
+
+
+def upload_profile_pic_to_drive(user, file, drive_service):
+    try:
+        file_id = None
+        if user.profile_pic:
+            match = re.search(r'/d/([a-zA-Z0-9_-]+)', user.profile_pic)
+            if match:
+                file_id = match.group(1)
+        
+        if file_id:
+            try:
+                drive_service.files().delete(fileId=file_id).execute()
+            except Exception as e:
+                print("Failed to delete from Google Drive:", e)
+        
+        # Cek atau buat folder user di Drive
+        folder_name = f"user-{user.id}"
+
+        # Cari folder user di Drive
+        response = drive_service.files().list(
+            q=f"'{os.getenv('GOOGLE_DRIVE_FOLDER_PROFILE_ID')}' in parents and name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false",
+            spaces='drive',
+            fields='files(id, name)'
+        ).execute()
+
+        folders = response.get('files', [])
+        if folders:
+            folder_id = folders[0]['id']
+        else:
+            # Kalau belum ada, buat folder baru
+            folder_metadata = {
+                'name': folder_name,
+                'mimeType': 'application/vnd.google-apps.folder',
+                'parents': [os.getenv("GOOGLE_DRIVE_FOLDER_PROFILE_ID")]
+            }
+            folder = drive_service.files().create(
+                body=folder_metadata,
+                fields='id'
+            ).execute()
+            folder_id = folder.get('id')
+
+        # Upload file ke folder user
+        file_metadata = {
+            'name': 'profile.jpg',
+            'parents': [folder_id]
+        }
+
+        media = MediaIoBaseUpload(file.stream, mimetype=file.mimetype, resumable=False)
+
+        uploaded = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, webViewLink'
+        ).execute()
+
+        return uploaded['webViewLink']
+
+    except Exception as e:
+        print("Failed to upload to Google Drive:", e)
+        return None

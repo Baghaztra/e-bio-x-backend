@@ -1,19 +1,12 @@
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from src.models.material import Material
 from src.config.database import db
+from src.config.drive import drive_service
 from datetime import datetime
 import os
 import re
-
-SERVICE_ACCOUNT_FILE = 'src/config/credentials.json'
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-drive_service = build('drive', 'v3', credentials=credentials)
 
 @jwt_required()
 def upload_material():
