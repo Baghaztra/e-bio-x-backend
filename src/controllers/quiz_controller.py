@@ -175,12 +175,16 @@ def get_quizzes_by_course(course_id):
     
     for quiz in quizzes:
         quiz.is_submited = False
+        quiz.score = 0
+        quiz.work_time = None
         
         student_id = get_jwt_identity()
         if student_id:
             submission = Submission.query.filter_by(student_id=student_id, quiz_id=quiz.id).first()
             if submission:
                 quiz.is_submited = True
+                quiz.score = submission.score
+                quiz.work_time = submission.work_time.strftime('%H:%M:%S')
                 
     return (
         jsonify(
@@ -191,6 +195,8 @@ def get_quizzes_by_course(course_id):
                         "title": quiz.title,
                         "is_closed": quiz.is_closed,
                         "is_submited": quiz.is_submited,
+                        "score": quiz.score,
+                        "work_time": quiz.work_time,
                         "questions": len(quiz.questions),
                         "created_at": quiz.created_at,
                     }
