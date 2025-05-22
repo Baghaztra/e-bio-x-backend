@@ -1,7 +1,7 @@
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier, export_text
-from src.models import Submission
+from src.models import Submission, Answer, Question
 from src.config.database import db
 
 def kmeans(quiz_id):
@@ -16,12 +16,10 @@ def kmeans(quiz_id):
         if s.score is not None:
             total_seconds = s.work_time.hour * 3600 + s.work_time.minute * 60 + s.work_time.second
             data.append([s.score, total_seconds])
-            # data.append([s.score])
 
     if len(data) < 3:
         return {'message': 'Data yang tersedia terlalu sedikit.'}, 400
     
-    # Training model
     # Scaling
     scaler = StandardScaler()
     data_scaled = scaler.fit_transform(data)
@@ -36,7 +34,6 @@ def kmeans(quiz_id):
     # Clustering
     kmeans = KMeans(n_clusters=3, random_state=0)
     clusters = kmeans.fit_predict(weighted_data)
-    # clusters = kmeans.fit_predict(data_scaled)
 
     data_scaled = scaler.fit_transform(data)
 
@@ -69,13 +66,31 @@ def decision_tree(quiz_id):
     if not submissions:
         return {'message': 'Data tidak ditemukan'}, 404
 
-    # Ambil data nilai & work_time
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()
+    if not questions:
+        return {'message': 'Soal tidak ditemukan'}, 404
+
+    question_ids = [q.id for q in questions]
+
     data = []
     labels = []
+
     for s in submissions:
         if s.score is not None and s.cluster is not None:
             total_seconds = s.work_time.hour * 3600 + s.work_time.minute * 60 + s.work_time.second
-            data.append([s.score, total_seconds])
+
+            answers = Answer.query.filter(
+                Answer.submission_id == s.id,
+                Answer.question_id.in_(question_ids)
+            ).order_by(Answer.question_id).all()
+
+            if len(answers) != len(question_ids):
+                continue
+
+            answer_values = [a.option_id for a in answers]
+
+            # Gabungkan ke array data
+            data.append([s.score, total_seconds] + answer_values)
             labels.append(s.cluster)
 
     if len(data) < 3:
@@ -85,6 +100,9 @@ def decision_tree(quiz_id):
     clf = DecisionTreeClassifier(random_state=0)
     clf.fit(data, labels)
 
-    rules = export_text(clf, feature_names=["score", "work_time_seconds"])
+    # Bikin feature_names
+    feature_names = ["score", "work_time_seconds"] + [f"answer_q{qid}" for qid in question_ids]
+
+    rules = export_text(clf, feature_names=feature_names)
 
     return rules
