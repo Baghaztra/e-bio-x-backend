@@ -54,6 +54,7 @@ def upload_material():
         }
     }), 201
 
+@jwt_required()
 def get_material_by_id(material_id):
     material = Material.query.get(material_id)
     
@@ -69,6 +70,7 @@ def get_material_by_id(material_id):
         'uploaded_at': material.uploaded_at,
     }), 200    
     
+@jwt_required()
 def get_material_by_course(course_id):
     materials = Material.query.filter_by(course_id=course_id).all()
 
@@ -87,6 +89,20 @@ def get_material_by_course(course_id):
         'message': 'Materials retrieved successfully',
         'data': result,
     }), 200 
+
+@jwt_required()
+def get_all_material():
+    materials = Material.query.all()
+
+    return jsonify([{
+            'id': material.id,
+            'title': material.title,
+            'description': material.content,
+            'file_url': material.file_url,
+            'course': material.course.name,
+            'uploaded_at': material.uploaded_at,
+        } for material in materials
+    ]), 200 
 
 @jwt_required()
 def delete_material(material_id):

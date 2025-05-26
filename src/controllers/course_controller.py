@@ -32,6 +32,7 @@ def create_course():
         }
     }), 201
 
+@jwt_required()
 def get_courses():
     courses = Course.query.all()
 
@@ -40,6 +41,7 @@ def get_courses():
         result.append({
             "id": course.id,
             "name": course.name,
+            "teacher": course.teacher.name,
             "created_at": course.created_at.isoformat(),
             "code": f"KLS{course.id:03d}", 
             "students": len(course.enrollments)

@@ -25,7 +25,7 @@ def create_app():
     # Import routes
     from src.controllers.user_controller import google_login, login, get_all_users, create_user, update_user, update_user_me, delete_user, protected
     from src.controllers.course_controller import create_course, get_courses, get_teacher_courses, get_student_courses, delete_course, enroll, out, get_course_by_id
-    from src.controllers.material_controller import upload_material, get_material_by_id, get_material_by_course, delete_material
+    from src.controllers.material_controller import upload_material, get_all_material, get_material_by_id, get_material_by_course, delete_material
     from src.controllers.quiz_controller import create_quiz, get_quiz_by_id, delete_quiz, get_quizzes_by_course, submit_quiz, remove_sumbission, get_submission_by_quiz, toggle_open_quiz, edit_quiz_title, edit_question, edit_option
     from src.controllers.analysis_controller import analyze_quiz, get_analyze
     
@@ -51,6 +51,7 @@ def create_app():
     app.add_url_rule('/api/course/quiz/<course_id>', view_func=get_quizzes_by_course, methods=['GET'])
     
     app.add_url_rule('/api/materials', view_func=upload_material, methods=['POST'])
+    app.add_url_rule('/api/materials', view_func=get_all_material, methods=['GET'])
     app.add_url_rule('/api/materials/<material_id>', view_func=get_material_by_id, methods=['GET'])
     app.add_url_rule('/api/materials/<material_id>', view_func=delete_material, methods=['DELETE'])
     
