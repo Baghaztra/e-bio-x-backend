@@ -5,8 +5,11 @@ from src.models.material import Material
 from src.config.database import db
 from src.config.drive import drive_service
 from datetime import datetime
+from dotenv import load_dotenv
 import os
 import re
+
+load_dotenv()
 
 @jwt_required()
 def upload_material():
