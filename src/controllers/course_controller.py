@@ -153,7 +153,12 @@ def get_course_by_id(course_id):
         students.append({
             "id": enrollment.student.id,
             "name": enrollment.student.name,
-            "email": enrollment.student.email
+            "email": enrollment.student.email,
+            "quizes": [{
+                "title":submission.quiz.title,
+                "score":submission.score,
+                "cluster":submission.cluster,
+                    }for submission in enrollment.student.quiz_results if submission.quiz.course_id == course.id]
         })
         
     return jsonify({

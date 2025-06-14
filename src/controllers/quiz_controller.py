@@ -13,7 +13,7 @@ def create_quiz():
     data = request.get_json()
     course_id = data.get('course_id')
     title = data.get('title')
-    
+
     if not course_id or not title:
         return jsonify({"error": "Course ID and title are required"}), 400
 
@@ -179,7 +179,10 @@ def get_quizzes_by_course(course_id):
         quiz.work_time = None
         
         student_id = get_jwt_identity()
-        if student_id:
+        if not student_id:
+            return jsonify({"error": "Student not authenticated"}), 401
+        student = User.query.get(student_id)
+        if student.role == 'student':
             submission = Submission.query.filter_by(student_id=student_id, quiz_id=quiz.id).first()
             if submission:
                 quiz.is_submited = True
@@ -196,7 +199,6 @@ def get_quizzes_by_course(course_id):
                         "is_closed": quiz.is_closed,
                         "is_submited": quiz.is_submited,
                         "score": quiz.score,
-                        "work_time": quiz.work_time,
                         "questions": len(quiz.questions),
                         "created_at": quiz.created_at,
                     }
@@ -218,6 +220,7 @@ def delete_quiz(quiz_id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
+        print(f"Error deleting quiz: {str(e)}")
         return jsonify({"error": f"Error deleting quiz: {str(e)}"}), 500
 
     return jsonify({"message": "Quiz deleted successfully"}), 200
@@ -312,6 +315,7 @@ def remove_sumbission(quiz_id):
     
     return jsonify({"message": "Submission deleted successfully"}), 200
  
+@jwt_required()
 def get_submission_by_quiz(quiz_id):
     quiz = Quiz.query.get(quiz_id)
     if not quiz:
@@ -339,6 +343,7 @@ def get_submission_by_quiz(quiz_id):
         200,
     )
 
+@jwt_required()
 def get_my_submission_by_id(quiz_id):
     quiz = Quiz.query.get(quiz_id)
     if not quiz:

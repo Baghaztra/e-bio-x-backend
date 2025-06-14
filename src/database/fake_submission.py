@@ -45,7 +45,7 @@ def seed(quiz_id):
             work_time=work_time,
         )
         db.session.add(submission)
-        db.session.flush()  # supaya submission.id langsung bisa dipakai
+        db.session.flush()
 
         # Buat jawaban random untuk tiap soal
         for question in questions:
@@ -67,4 +67,4 @@ def seed(quiz_id):
 
 if __name__ == "__main__":
     with app.app_context():
-        seed(8)
+        seed(1)
