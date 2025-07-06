@@ -143,6 +143,29 @@ def out(course_id):
     }), 200
 
 @jwt_required()
+def kick(course_id, student_id):
+    if course_id.startswith("KLS") and course_id[3:].isdigit():
+        course_id = int(course_id[3:])
+    course = Course.query.get(course_id)
+    
+    if not course:
+        return jsonify({"error": "Course not found"}), 404
+    
+    if not student_id:
+        return jsonify({"error": "Student not authenticated"}), 401
+    
+    enroll = Enrollment.query.filter_by(student_id=student_id, course_id=course_id).first()
+    if not enroll:
+        return jsonify({"error": f"You are not enrolled in {course.name}"}), 400
+    
+    db.session.delete(enroll)
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Successfully out from {course.name}",
+    }), 200
+
+@jwt_required()
 def get_course_by_id(course_id):
     course = Course.query.get(course_id)
     if not course:
