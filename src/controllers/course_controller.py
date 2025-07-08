@@ -120,8 +120,7 @@ def enroll(course_id):
 def out(course_id):
     if course_id.startswith("KLS") and course_id[3:].isdigit():
         course_id = int(course_id[3:])
-    else:
-        return jsonify({"error": "Invalid course code format"}), 400
+
     course = Course.query.get(course_id)
     
     if not course:
