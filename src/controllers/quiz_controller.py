@@ -42,12 +42,12 @@ def create_quiz():
                 db.session.add(new_option)
 
         db.session.commit()
+        return jsonify({"message": "Quiz created successfully", "quiz_id": quiz.id}), 201
 
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Error creating quiz: {str(e)}"}), 500
 
-    return jsonify({"message": "Quiz created successfully", "quiz_id": quiz.id}), 201
 
 @jwt_required()
 def toggle_open_quiz(quiz_id):
