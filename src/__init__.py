@@ -67,9 +67,9 @@ def create_app():
     app.add_url_rule('/api/quiz/submission/<quiz_id>', view_func=get_submission_by_quiz, methods=['GET'])
     app.add_url_rule('/api/quiz/submission/<quiz_id>', view_func=remove_sumbission, methods=['DELETE'])
     
-    app.add_url_rule('/api/quiz/<quiz_id>/edit_title', view_func=edit_quiz_title, methods=['PUT'])
-    app.add_url_rule('/api/quiz/<question_id>/edit_question', view_func=edit_question, methods=['PUT'])
-    app.add_url_rule('/api/quiz/<option_id>/edit_option', view_func=edit_option, methods=['PUT'])
+    app.add_url_rule('/api/quiz/<quiz_id>/edit_title', view_func=edit_quiz_title, methods=['PATCH'])
+    app.add_url_rule('/api/quiz/<question_id>/edit_question', view_func=edit_question, methods=['PATCH'])
+    app.add_url_rule('/api/quiz/<option_id>/edit_option', view_func=edit_option, methods=['PATCH'])
     
     app.add_url_rule('/api/analysis/<quiz_id>', view_func=get_analyze, methods=['GET'])
     app.add_url_rule('/api/analysis/<quiz_id>', view_func=analyze_quiz, methods=['POST'])
