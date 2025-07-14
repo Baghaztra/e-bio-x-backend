@@ -201,6 +201,7 @@ def get_quizzes_by_course(course_id):
                         "score": quiz.score,
                         "questions": len(quiz.questions),
                         "created_at": quiz.created_at,
+                        "work_time": quiz.work_time if quiz.work_time else None,
                     }
                     for quiz in quizzes
                 ]
