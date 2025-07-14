@@ -82,17 +82,17 @@ python -m src.database.seeder
 ```bash
 python -m src.database.reset
 ```
-
-
-## Menjalankan Aplikasi
+9. Jalankan analisis diluar aplikasi
+```bash
+python run_analysis.py <quiz_id>
+```
+Catatan: Ganti `<quiz_id>` dengan ID kuis yang ingin dianalisis. ID kuis dapat ditemukan di database pada tabel `quiz`.
 
 1. Jalankan aplikasi
 ```bash
 python app.py
 ```
 Aplikasi akan berjalan di `http://localhost:5000`
-
-## Contoh API Endpoints
 
 ## Teknologi yang Digunakan
 
@@ -102,8 +102,3 @@ Aplikasi akan berjalan di `http://localhost:5000`
 - **MySQL**: Database
 - **python-dotenv**: Environment variables
 - **Faker**: Generate data dummy
-
-## Development
-
-### Database Migrations
-Migrasi database ditangani oleh Flask-Migrate dan SQLAlchemy. Tabel akan dibuat otomatis saat aplikasi pertama kali dijalankan.
